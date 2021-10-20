@@ -4,8 +4,8 @@
 - [X] Criar um novo todo;
 - [X] Listar todos os todos;
 - [X] Alterar o `title` e o `deadline` de um todo existente;
-- [] Marcar um todo como feito;
-- [] Excluir um todo;
+- [X] Marcar um todo como feito;
+- [X] Excluir um todo;
 
 OBS.: todas essas funcionalidades para um usuário em específico. (O `username` será passado pelo header).
 
