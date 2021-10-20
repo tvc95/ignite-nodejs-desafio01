@@ -1,17 +1,30 @@
-# Desafio 01 - Rocketseat
+# Desafio 01 - Ignite (Node.JS)
+![](https://img.shields.io/github/issues/tvc95/ignite-nodejs-desafio01?style=flat-square) ![](https://img.shields.io/github/forks/tvc95/ignite-nodejs-desafio01) ![](https://img.shields.io/github/stars/tvc95/ignite-nodejs-desafio01) ![](https://img.shields.io/github/license/tvc95/ignite-nodejs-desafio01)
 
-## Requisitos:
-- [X] Criar um novo todo;
-- [X] Listar todos os todos;
-- [X] Alterar o `title` e o `deadline` de um todo existente;
-- [X] Marcar um todo como feito;
-- [X] Excluir um todo;
+<h4 align="center"> 
+	Status: Concluído
+</h4>
 
-OBS.: todas essas funcionalidades para um usuário em específico. (O `username` será passado pelo header).
+## Descrição
+Essa é uma aplicação para gerenciar tarefas (em inglês "To-do's"). A API desenvolvide permite a criação de usuários, além de permitir a criação, listagem, edição e exclusão de To-do's de um usuário específico.
 
-## Outros requisitos
-- [X] Criar um usuário
+## Funcionalidades
+- [X] Criação de usuários
+- [X] CRUD de To-do's
 
-
-
-https://www.notion.so/Desafio-01-Conceitos-do-Node-js-59ccb235aecd43a6a06bf09a24e7ede8
+## Instalação
+### Clone o projeto e abra a pasta do projeto
+```
+1. git clone https://github.com/tvc95/ignite-nodejs-desafio01.git
+2. cd meetapp-api
+```
+### Instale as dependências e inicialize o servidor
+```
+3. yarn
+4. yarn dev
+```
+**OBS.: Se você quiser usar NPM em vez do Yarn, seguem os comandos abaixo**
+```
+3. npm install
+4. npm run dev
+```

@@ -9,6 +9,13 @@ app.use(express.json());
 
 const users = [];
 
+/**
+ * Middleware de verificação da conta do usuário
+ * @param {*} request 
+ * @param {*} response 
+ * @param {*} next 
+ * @returns 
+ */
 function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
@@ -86,11 +93,7 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 });
 
 /**
- * username -> header
- * title, deadline -> body
- * 
- * É preciso alterar apenas o title e o deadline da tarefa que 
- * possua o id igual ao id presente nos parâmetros da rota.
+ * Atualiza um To-do específico de um usuário
  */
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request;
@@ -113,16 +116,23 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
     deadline: new Date(deadline),
   };
 
-  console.log(user.todos[todoIdx]);
-
-  return response.status(201).send();
-
-
+  return response.status(201).json(user.todos[todoIdx]);
 });
 
+/**
+ * Marca um To-do específico como "feito"
+ */
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { id } = request.params;
+
+  const findTodo = user.todos.some((todo) => todo.id === id);
+
+  if (!findTodo) {
+    return response.status(404).json({
+      error: "To-do not found"
+    });
+  }
 
   const todoIdx = user.todos.findIndex((todo) => todo.id === id);
 
@@ -131,9 +141,12 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
     done: true,
   };
 
-  return response.status(201).send();
+  return response.status(201).json(user.todos[todoIdx]);
 });
 
+/**
+ * Exclui um To-do
+ */
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { id } = request.params;
@@ -148,7 +161,7 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
 
   user.todos.splice(todoIdx, 1);
 
-  return response.status(201).send();
+  return response.status(204).send();
 
 });
 
