@@ -26,14 +26,7 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 /**
- * A rota deve receber name, e username dentro do corpo da 
- * requisição. Ao cadastrar um novo usuário, ele deve ser 
- * armazenado dentro de um objeto no seguinte formato:
- * { id (uuid), name (string), username (string), todos ([])}
- * 
- * Certifique-se que o ID seja um UUID, e de sempre iniciar a 
- * lista todos como um array vazio. O objeto do usuário deve 
- * ser retornado na resposta da requisição.
+ * Rota de cadastro de um novo usuário
  */
 app.post('/users', (request, response) => {
   const { name, username } = request.body;
@@ -58,20 +51,32 @@ app.post('/users', (request, response) => {
   return response.status(201).json(newUser);
 });
 
+/**
+ * Retorna a lista de To-do's de um usuário específico
+ */
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
   return response.json(user.todos);
 });
 
+/**
+ * Cria um novo todo para um usuário específico
+ */
 app.post('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { title, deadline } = request.body;
 
+  if (title === "" || deadline === "") {
+    return response.status(400).json({
+      error: "No request body data"
+    });
+  }
+
   const newTodo = {
     id: uuidv4(),
     title,
-    deadline,
-    created_at: new Date(deadline),
+    created_at: new Date(),
+    deadline: new Date(deadline),
     done: false
   };
 
@@ -80,8 +85,39 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
   return response.status(201).json(newTodo);
 });
 
+/**
+ * username -> header
+ * title, deadline -> body
+ * 
+ * É preciso alterar apenas o title e o deadline da tarefa que 
+ * possua o id igual ao id presente nos parâmetros da rota.
+ */
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { user } = request;
+  const { id } = request.params;
+  const { title, deadline } = request.body;
+
+  const findTodo = user.todos.some((todo) => todo.id === id);
+
+  if (!findTodo) {
+    return response.status(404).json({
+      error: "To-do not found"
+    });
+  }
+
+  const todoIdx = user.todos.findIndex((todo) => todo.id === id);
+
+  user.todos[todoIdx] = {
+    ...user.todos[todoIdx],
+    title,
+    deadline: new Date(deadline),
+  };
+
+  console.log(user.todos[todoIdx]);
+
+  return response.status(201).send();
+
+
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
