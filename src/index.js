@@ -34,15 +34,57 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+
+  if ((user.pro === false && user.todos.length < 10) || (user.pro)) {
+    return next();
+  }
+
+  return response.status(403).json({
+    error: "This user doesn't have the permission to add new to-dos"
+  })
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((u) => u.username === username);
+
+  if (!user) {
+    return response.status(404).json({
+      error: 'User not found!'
+    });
+  }
+
+  const foundTodo = user.todos.find((todo) => todo.id === id);
+
+  if (!foundTodo) {
+    return response.status(404).json({
+      error: 'Todo not found!'
+    });
+  }
+
+  request.todo = foundTodo;
+
+  return next();
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find((u) => u.id === id);
+
+  if (!user) {
+    return response.status(404).json({
+      error: "This user doesn't exist"
+    });
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 
@@ -65,6 +107,7 @@ app.post('/users', (request, response) => {
     id: uuidv4(),
     name,
     username,
+    pro: false,
     todos: [],
   };
 
@@ -134,53 +177,25 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 /**
  * Atualiza um To-do específico de um usuário
  */
-app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  const { user } = request;
-  const { id } = request.params;
+ app.put('/todos/:id', checksTodoExists, (request, response) => {
   const { title, deadline } = request.body;
+  const { todo } = request;
 
-  const findTodo = user.todos.some((todo) => todo.id === id);
+  todo.title = title;
+  todo.deadline = new Date(deadline);
 
-  if (!findTodo) {
-    return response.status(404).json({
-      error: "To-do not found"
-    });
-  }
-
-  const todoIdx = user.todos.findIndex((todo) => todo.id === id);
-
-  user.todos[todoIdx] = {
-    ...user.todos[todoIdx],
-    title,
-    deadline: new Date(deadline),
-  };
-
-  return response.status(201).json(user.todos[todoIdx]);
+  return response.json(todo);
 });
 
 /**
  * Marca um To-do específico como "feito"
  */
-app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  const { user } = request;
-  const { id } = request.params;
+ app.patch('/todos/:id/done', checksTodoExists, (request, response) => {
+  const { todo } = request;
 
-  const findTodo = user.todos.some((todo) => todo.id === id);
+  todo.done = true;
 
-  if (!findTodo) {
-    return response.status(404).json({
-      error: "To-do not found"
-    });
-  }
-
-  const todoIdx = user.todos.findIndex((todo) => todo.id === id);
-
-  user.todos[todoIdx] = {
-    ...user.todos[todoIdx],
-    done: true,
-  };
-
-  return response.status(201).json(user.todos[todoIdx]);
+  return response.json(todo);
 });
 
 /**
