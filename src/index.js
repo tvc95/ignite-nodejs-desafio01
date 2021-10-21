@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, validate } = require('uuid');
 
 const app = express();
 
@@ -9,6 +9,7 @@ app.use(express.json());
 
 const users = [];
 
+/// MIDDLEWARES
 /**
  * Middleware de verificação da conta do usuário
  * @param {*} request 
@@ -32,6 +33,20 @@ function checksExistsUserAccount(request, response, next) {
   return next();
 }
 
+function checksCreateTodosUserAvailability(request, response, next) {
+  // Complete aqui
+}
+
+function checksTodoExists(request, response, next) {
+  // Complete aqui
+}
+
+function findUserById(request, response, next) {
+  // Complete aqui
+}
+
+
+/// ROTAS
 /**
  * Rota de cadastro de um novo usuário
  */
@@ -56,6 +71,30 @@ app.post('/users', (request, response) => {
   users.push(newUser);
 
   return response.status(201).json(newUser);
+});
+
+/**
+ * Retorna um usuário específico
+ */
+app.get('/users/:id', findUserById, (request, response) => {
+  const { user } = request;
+
+  return response.json(user);
+});
+
+/**
+ * Muda o plano do usuário
+ */
+app.patch('/users/:id/pro', findUserById, (request, response) => {
+  const { user } = request;
+
+  if (user.pro) {
+    return response.status(400).json({ error: 'Pro plan is already activated.' });
+  }
+
+  user.pro = true;
+
+  return response.json(user);
 });
 
 /**
@@ -165,4 +204,11 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
 
 });
 
-module.exports = app;
+module.exports = {
+  app,
+  users,
+  checksExistsUserAccount,
+  checksCreateTodosUserAvailability,
+  checksTodoExists,
+  findUserById
+};
