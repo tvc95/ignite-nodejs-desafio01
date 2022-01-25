@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4, validate } = require('uuid');
+const { APIGatewayProxyHandler } = require('aws-lambda');
+import { document } from './dynamoDbClient';
+const { hash } = require('bcrypt');
+const dayjs = require('dayjs');
 
 const app = express();
 
@@ -145,7 +149,23 @@ app.patch('/users/:id/pro', findUserById, (request, response) => {
  */
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-  return response.json(user.todos);
+
+  const response = await document.query({
+    TableName: "todos",
+    KeyConditionExpression: "userId = :userId",
+    ExpressionAttributeValues: {
+      ":userId" : user.id
+    }
+  }).promise()
+
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(response.Items),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }
 });
 
 /**
@@ -161,17 +181,38 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
     });
   }
 
-  const newTodo = {
-    id: uuidv4(),
-    title,
-    created_at: new Date(),
-    deadline: new Date(deadline),
-    done: false
-  };
+  const dateDeadline = dayjs(deadline).format("DD-MM-YYYY");
+  const todoID = uuidv4();
 
-  user.todos.push(newTodo);
+  document.put({
+    TableName: "todos",
+    Item: {
+      id: todoID,
+      userId: user.id,
+      title,
+      created_at: new Date(),
+      deadline: dateDeadline,
+      done: false
+    }
+  }).promise();
 
-  return response.status(201).json(newTodo);
+  return {
+    statusCode: 201,
+    body: JSON.stringify({
+      message: "Todo created successfully!",
+      todo: {
+        id: todoID,
+        userId: user.id,,
+        title,
+        done: false,
+        deadline: new Date(deadline)
+      }
+    }),
+      
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }
 });
 
 /**
